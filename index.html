@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="Dr Saiful Safuan Md Sani" content="Hospital Ampang">
+    <title>LEAN Healthcare Project Identification Tool</title>
+    <meta name="description" content="Evidence-based tool for identifying LEAN healthcare projects using the DOWNTIME framework">
+    <meta name="keywords" content="LEAN healthcare, waste elimination, process improvement, DOWNTIME, healthcare efficiency">
+    <meta name="author" content="Dr Saiful Safuan Md Sani">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dcicantab5.github.io/lean/">
+    <meta property="og:title" content="LEAN Healthcare Project Identification Tool">
+    <meta property="og:description" content="Identify waste and generate project ideas using the DOWNTIME framework">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="LEAN Healthcare Project Identification Tool">
+    <meta property="twitter:description" content="LEAN waste identification tool for healthcare improvement projects">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='50' x='50' text-anchor='middle' font-size='50'>⚡</text></svg>">
+    
+    <!-- React and Babel for development -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f9fafb;
+            color: #111827;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        #root {
+            min-height: 100vh;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YE8HW2NGJS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-YE8HW2NGJS');
+</script>
+    
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+
+        // SVG Icon Components
+        const ZapIcon = () => (
+            <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+        );
+
+        const ClipboardListIcon = () => (
+            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+        );
+
+        const AlertCircleIcon = () => (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const FileTextIcon = () => (
+            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+        );
+
+        const LightBulbIcon = () => (
+            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+        );
+
+        const LeanHealthcareApp = () => {
+            const [processArea, setProcessArea] = useState('');
+            const [department, setDepartment] = useState('');
+            const [wasteTypes, setWasteTypes] = useState({
+                defects: false,
+                overproduction: false,
+                waiting: false,
+                nonUtilizedTalent: false,
+                transportation: false,
+                inventory: false,
+                motion: false,
+                excessProcessing: false
+            });
+            const [showResults, setShowResults] = useState(false);
+            const [results, setResults] = useState({
+                identifiedWastes: [],
+                projectSuggestions: [],
+                priorityLevel: '',
+                nextSteps: ''
+            });
+
+            const wasteDefinitions = {
+                defects: {
+                    name: "Defects",
+                    description: "Mistakes or errors that require rework",
+                    examples: "Wrong medication, misdiagnosis, incomplete charts",
+                    projects: [
+                        "Implement medication error reduction protocols",
+                        "Standardize patient handoff procedures",
+                        "Improve lab test accuracy systems",
+                        "Create error-proofing checklists"
+                    ]
+                },
+                overproduction: {
+                    name: "Overproduction", 
+                    description: "Doing more than needed or sooner than needed",
+                    examples: "Unnecessary tests, duplicate paperwork, excess supplies",
+                    projects: [
+                        "Reduce unnecessary diagnostic testing",
+                        "Streamline medical supply ordering",
+                        "Eliminate duplicate documentation",
+                        "Implement evidence-based testing protocols"
+                    ]
+                },
+                waiting: {
+                    name: "Waiting",
+                    description: "Time spent waiting for the next process step",
+                    examples: "Patient wait times, lab result delays, discharge delays",
+                    projects: [
+                        "Reduce ER waiting times",
+                        "Improve lab turnaround times", 
+                        "Streamline patient discharge process",
+                        "Optimize appointment scheduling"
+                    ]
+                },
+                nonUtilizedTalent: {
+                    name: "Non-utilized Talent",
+                    description: "Wasting skills, knowledge, or creativity of employees",
+                    examples: "Underutilized staff skills, lack of empowerment, poor delegation",
+                    projects: [
+                        "Empower frontline staff for process improvement",
+                        "Implement skill-based task delegation",
+                        "Create cross-training programs",
+                        "Establish staff suggestion systems"
+                    ]
+                },
+                transportation: {
+                    name: "Transportation",
+                    description: "Unnecessary movement of people, equipment, or materials",
+                    examples: "Long walking distances, inefficient patient transport, supply delivery",
+                    projects: [
+                        "Redesign clinic/floor layout",
+                        "Optimize patient transport between departments",
+                        "Streamline supply delivery systems",
+                        "Implement mobile workstations"
+                    ]
+                },
+                inventory: {
+                    name: "Inventory",
+                    description: "Excess supplies, medications, or equipment",
+                    examples: "Overstocked supplies, expired medications, unused equipment",
+                    projects: [
+                        "Implement just-in-time inventory",
+                        "Reduce overstocked consumables",
+                        "Improve medication inventory management",
+                        "Optimize equipment utilization"
+                    ]
+                },
+                motion: {
+                    name: "Motion",
+                    description: "Unnecessary physical movement by staff",
+                    examples: "Reaching for supplies, poor workstation setup, inefficient room layout",
+                    projects: [
+                        "Reorganize nursing stations for efficiency",
+                        "Standardize procedure tray setups",
+                        "Improve patient room layouts",
+                        "Implement 5S workplace organization"
+                    ]
+                },
+                excessProcessing: {
+                    name: "Excess Processing",
+                    description: "More work than required on a service",
+                    examples: "Redundant data entry, complex forms, unnecessary approvals",
+                    projects: [
+                        "Consolidate redundant data entry",
+                        "Simplify patient intake forms",
+                        "Eliminate unnecessary approvals",
+                        "Automate routine processes"
+                    ]
+                }
+            };
+
+            const handleWasteChange = (wasteType) => {
+                setWasteTypes(prev => ({
+                    ...prev,
+                    [wasteType]: !prev[wasteType]
+                }));
+            };
+
+            const generateRecommendations = () => {
+                const selectedWastes = Object.keys(wasteTypes).filter(waste => wasteTypes[waste]);
+                const identifiedWastes = selectedWastes.map(waste => wasteDefinitions[waste]);
+                
+                let projectSuggestions = [];
+                let priorityLevel = '';
+                let nextSteps = '';
+
+                // Collect all project suggestions from selected wastes
+                selectedWastes.forEach(waste => {
+                    projectSuggestions.push(...wasteDefinitions[waste].projects);
+                });
+
+                // Determine priority level based on number of wastes identified
+                if (selectedWastes.length === 0) {
+                    priorityLevel = 'No waste identified';
+                    nextSteps = 'Consider conducting a more detailed process observation or Gemba walk.';
+                } else if (selectedWastes.length <= 2) {
+                    priorityLevel = 'Low to Moderate';
+                    nextSteps = 'Focus on the identified waste areas. Start with quick wins that require minimal resources.';
+                } else if (selectedWastes.length <= 4) {
+                    priorityLevel = 'Moderate to High';
+                    nextSteps = 'Prioritize based on impact and feasibility. Consider forming a dedicated improvement team.';
+                } else {
+                    priorityLevel = 'High';
+                    nextSteps = 'Significant opportunity for improvement. Recommend comprehensive value stream mapping and strategic LEAN initiative.';
+                }
+
+                setResults({
+                    identifiedWastes,
+                    projectSuggestions: [...new Set(projectSuggestions)], // Remove duplicates
+                    priorityLevel,
+                    nextSteps
+                });
+
+                setShowResults(true);
+            };
+
+            const resetForm = () => {
+                setProcessArea('');
+                setDepartment('');
+                setWasteTypes({
+                    defects: false,
+                    overproduction: false,
+                    waiting: false,
+                    nonUtilizedTalent: false,
+                    transportation: false,
+                    inventory: false,
+                    motion: false,
+                    excessProcessing: false
+                });
+                setShowResults(false);
+            };
+
+            const getPriorityColor = (level) => {
+                if (level.includes('Low')) return 'text-green-700 bg-green-50 border-green-200';
+                if (level.includes('Moderate')) return 'text-yellow-700 bg-yellow-50 border-yellow-200';
+                if (level.includes('High')) return 'text-red-700 bg-red-50 border-red-200';
+                return 'text-gray-700 bg-gray-50 border-gray-200';
+            };
+
+            const selectedWasteCount = Object.values(wasteTypes).filter(Boolean).length;
+            const isFormValid = processArea !== '' && selectedWasteCount > 0;
+
+            return (
+                <div className="max-w-6xl mx-auto p-6 bg-white">
+                    <div className="mb-8 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-4">
+                            <ZapIcon />
+                            <h1 className="text-3xl font-bold text-gray-800">LEAN Healthcare Project Identification</h1>
+                        </div>
+                        <p className="text-gray-600 max-w-3xl mx-auto">
+                            Identify waste and generate improvement project ideas using the DOWNTIME framework. 
+                            Focus on eliminating waste to increase efficiency and value for patients.
+                        </p>
+                    </div>
+
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        {/* Input Section */}
+                        <div className="lg:col-span-1 space-y-6">
+                            <div className="border border-gray-200 rounded-lg p-6">
+                                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                                    <ClipboardListIcon />
+                                    Process Information
+                                </h2>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Process/Area of Focus
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={processArea}
+                                            onChange={(e) => setProcessArea(e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="e.g., Patient discharge, Emergency department flow"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Department/Unit (Optional)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={department}
+                                            onChange={(e) => setDepartment(e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="e.g., ICU, Outpatient Clinic, Surgery"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* DOWNTIME Reference */}
+                            <div className="border border-gray-200 rounded-lg p-6">
+                                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                                    <FileTextIcon />
+                                    DOWNTIME Framework
+                                </h3>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="font-medium">D</span>
+                                        <span>Defects</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="font-medium">O</span>
+                                        <span>Overproduction</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="font-medium">W</span>
+                                        <span>Waiting</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="font-medium">N</span>
+                                        <span>Non-utilized Talent</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="font-medium">T</span>
+                                        <span>Transportation</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="font-medium">I</span>
+                                        <span>Inventory</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="font-medium">M</span>
+                                        <span>Motion</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="font-medium">E</span>
+                                        <span>Excess Processing</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Waste Identification Section */}
+                        <div className="lg:col-span-1 space-y-6">
+                            <div className="border border-gray-200 rounded-lg p-6">
+                                <h2 className="text-xl font-semibold mb-4">Identify Waste Types</h2>
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Select the types of waste you observe in your process:
+                                </p>
+                                
+                                <div className="space-y-3">
+                                    {Object.entries(wasteDefinitions).map(([key, waste]) => (
+                                        <div key={key} className="border border-gray-100 rounded p-3">
+                                            <label className="flex items-start space-x-3 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={wasteTypes[key]}
+                                                    onChange={() => handleWasteChange(key)}
+                                                    className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                />
+                                                <div className="flex-1">
+                                                    <span className="font-medium text-gray-900">{waste.name}</span>
+                                                    <p className="text-xs text-gray-600 mt-1">{waste.description}</p>
+                                                    <p className="text-xs text-blue-600 mt-1">
+                                                        Examples: {waste.examples}
+                                                    </p>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="mt-6 flex gap-3">
+                                    <button
+                                        onClick={generateRecommendations}
+                                        disabled={!isFormValid}
+                                        className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                    >
+                                        Generate Project Ideas
+                                    </button>
+                                    <button
+                                        onClick={resetForm}
+                                        className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                    >
+                                        Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Results Section */}
+                        <div className="lg:col-span-1 space-y-6">
+                            {showResults ? (
+                                <div className="space-y-4">
+                                    {/* Priority Level */}
+                                    <div className="border border-gray-200 rounded-lg p-6">
+                                        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                                            <LightBulbIcon />
+                                            Project Recommendations
+                                        </h2>
+
+                                        <div className={`p-4 rounded-lg border mb-4 ${getPriorityColor(results.priorityLevel)}`}>
+                                            <h3 className="font-semibold mb-1">Priority Level</h3>
+                                            <p>{results.priorityLevel}</p>
+                                        </div>
+
+                                        {/* Identified Wastes */}
+                                        {results.identifiedWastes.length > 0 && (
+                                            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-4">
+                                                <h3 className="font-semibold text-blue-800 mb-2">Identified Waste Types ({results.identifiedWastes.length})</h3>
+                                                <ul className="text-blue-700 text-sm space-y-1">
+                                                    {results.identifiedWastes.map((waste, index) => (
+                                                        <li key={index}>• {waste.name}: {waste.description}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        {/* Project Suggestions */}
+                                        {results.projectSuggestions.length > 0 && (
+                                            <div className="bg-green-50 border border-green-200 p-4 rounded-lg mb-4">
+                                                <h3 className="font-semibold text-green-800 mb-2">Suggested Projects</h3>
+                                                <ul className="text-green-700 text-sm space-y-1">
+                                                    {results.projectSuggestions.slice(0, 8).map((project, index) => (
+                                                        <li key={index}>• {project}</li>
+                                                    ))}
+                                                    {results.projectSuggestions.length > 8 && (
+                                                        <li className="text-xs text-green-600 mt-2">
+                                                            +{results.projectSuggestions.length - 8} more suggestions available
+                                                        </li>
+                                                    )}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        {/* Next Steps */}
+                                        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                                            <h3 className="font-semibold text-yellow-800 mb-1 flex items-center gap-1">
+                                                <AlertCircleIcon />
+                                                Next Steps
+                                            </h3>
+                                            <p className="text-yellow-700 text-sm">{results.nextSteps}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="border border-gray-200 rounded-lg p-6 text-center text-gray-500">
+                                    <ZapIcon />
+                                    <p className="mt-3">Select your process area and identify waste types to generate project recommendations</p>
+                                </div>
+                            )}
+
+                            {/* LEAN Application Steps */}
+                            <div className="border border-gray-200 rounded-lg p-6">
+                                <h3 className="font-semibold mb-3">LEAN Application Steps</h3>
+                                <div className="text-sm text-gray-600 space-y-2">
+                                    <p><strong>1. Identify Problem Area:</strong> Talk to frontline staff, patients, and administrators</p>
+                                    <p><strong>2. Define Value Stream:</strong> Map the entire process from patient perspective</p>
+                                    <p><strong>3. Conduct Gemba Walk:</strong> Observe the process in action</p>
+                                    <p><strong>4. Prioritize by Impact:</strong> Choose projects with clear, measurable outcomes</p>
+                                </div>
+                            </div>
+
+                            {/* Evidence Base */}
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                                <h3 className="font-semibold mb-3 text-blue-800 flex items-center gap-2">
+                                    <AlertCircleIcon />
+                                    LEAN Healthcare Principles
+                                </h3>
+                                <div className="text-sm text-blue-700 space-y-2">
+                                    <p className="font-medium">• Focus on eliminating waste to increase efficiency and patient value</p>
+                                    <p className="font-medium">• Use DOWNTIME framework to systematically identify waste</p>
+                                    <p className="font-medium">• Engage frontline staff in continuous improvement</p>
+                                    <p className="text-xs text-blue-600 mt-3">
+                                        Based on LEAN principles adapted for healthcare environments
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 text-center text-sm text-gray-500">
+                        <p>This tool provides evidence-based recommendations for LEAN healthcare projects. Apply clinical judgment and organizational context in implementation.</p>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<LeanHealthcareApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
